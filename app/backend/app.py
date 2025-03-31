@@ -2,7 +2,9 @@ import logging
 import os
 import re
 import uuid
-
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
 from PIL import Image
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 from passlib.context import CryptContext
@@ -100,7 +102,78 @@ async def upload_image(
         raise HTTPException(status_code=500, detail=f"Error uploading image: {str(e)}")
 
 
-# Predict
+# # Predict
+# @app.post("/predict")
+# async def predict(request: PredictionRequest, db: Session = Depends(get_db)):
+#     image_upload = db.query(ImageUpload).filter(ImageUpload.image_id == request.image_id).first()
+#     if not image_upload:
+#         raise HTTPException(status_code=404, detail="Image not found")
+#
+#     image_path = image_upload.image_path
+#     image = Image.open(image_path).convert("RGB")
+#
+#     processor = TrOCRProcessor.from_pretrained('ml_model')
+#     model = VisionEncoderDecoderModel.from_pretrained('ml_model')
+#     pixel_values = processor(images=image, return_tensors="pt").pixel_values
+#
+#     generated_ids = model.generate(pixel_values)
+#     generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+#
+#     generated_text = ''.join(re.findall(r'\d', generated_text))
+#
+#     prediction_result = PredictionResult(
+#         image_id=request.image_id,
+#         predicted_digit=int(generated_text) if generated_text.isdigit() else -1,
+#         confidence_score=None
+#     )
+#     db.add(prediction_result)
+#     db.commit()
+#     db.refresh(prediction_result)
+#
+#     return {"predicted_digit": generated_text, "prediction_id": prediction_result.prediction_id}
+
+
+
+
+def segment_and_visualize(image_path, y_threshold=25, x_merge_threshold=15):
+    img = cv2.imread(image_path)
+    if img is None:
+        print("Error: Unable to load image. Check the file path.")
+        return []
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, binary = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    bounding_boxes = [cv2.boundingRect(c) for c in contours]
+    bounding_boxes = sorted(bounding_boxes, key=lambda b: b[1])
+
+    lines = []
+    current_line = []
+    for box in bounding_boxes:
+        x, y, w, h = box
+        if not current_line:
+            current_line.append(box)
+        else:
+            median_y = np.median([b[1] for b in current_line])
+            if abs(y - median_y) <= y_threshold:
+                current_line.append(box)
+            else:
+                lines.append(current_line)
+                current_line = [box]
+    if current_line:
+        lines.append(current_line)
+
+    line_images = []
+    for i, line in enumerate(lines):
+        x_min = max(0, min([b[0] for b in line]) - x_merge_threshold)
+        y_min = max(0, min([b[1] for b in line]) - 5)
+        x_max = min(img.shape[1], max([b[0] + b[2] for b in line]) + x_merge_threshold)
+        y_max = min(img.shape[0], max([b[1] + b[3] for b in line]) + 5)
+        line_img = img[y_min:y_max, x_min:x_max]
+        line_images.append(line_img)
+    return line_images
+
+
 @app.post("/predict")
 async def predict(request: PredictionRequest, db: Session = Depends(get_db)):
     image_upload = db.query(ImageUpload).filter(ImageUpload.image_id == request.image_id).first()
@@ -108,24 +181,35 @@ async def predict(request: PredictionRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Image not found")
 
     image_path = image_upload.image_path
-    image = Image.open(image_path).convert("RGB")
+    os.makedirs("temp_images", exist_ok=True)
+
+    line_images = segment_and_visualize(image_path)
 
     processor = TrOCRProcessor.from_pretrained('ml_model')
     model = VisionEncoderDecoderModel.from_pretrained('ml_model')
-    pixel_values = processor(images=image, return_tensors="pt").pixel_values
 
-    generated_ids = model.generate(pixel_values)
-    generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    extracted_text_lines = []
+    for i, line_img in enumerate(line_images):
+        temp_image_path = f"temp_images/line_{i}.png"
+        cv2.imwrite(temp_image_path, line_img)
 
-    generated_text = ''.join(re.findall(r'\d', generated_text))
+        image = Image.open(temp_image_path).convert("RGB")
+        pixel_values = processor(images=image, return_tensors="pt").pixel_values
+        generated_ids = model.generate(pixel_values)
+        generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+        extracted_text_lines.append(generated_text)
+        os.remove(temp_image_path)
+
+    full_extracted_text = "\n".join(extracted_text_lines)
 
     prediction_result = PredictionResult(
         image_id=request.image_id,
-        predicted_digit=int(generated_text) if generated_text.isdigit() else -1,
+        predicted_text=full_extracted_text,
         confidence_score=None
     )
     db.add(prediction_result)
     db.commit()
     db.refresh(prediction_result)
 
-    return {"predicted_digit": generated_text, "prediction_id": prediction_result.prediction_id}
+    return {"predicted_text": full_extracted_text, "prediction_id": prediction_result.prediction_id}

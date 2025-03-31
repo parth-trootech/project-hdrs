@@ -64,7 +64,7 @@ pip install -r requirements.txt
 
 Step 4: Run the Backend
 ```bash
-uvicorn app.backend.main:app --reload
+uvicorn app.backend.app:app --reload
 ```
 
 Step 5: Run the Frontend
