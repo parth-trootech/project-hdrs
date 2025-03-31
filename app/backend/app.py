@@ -9,9 +9,11 @@ from passlib.context import CryptContext
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+
 from app.backend.schemas import PredictionRequest
 from app.backend.schemas import UserCreate, UserLogin
 from app.db.models import User, ImageUpload, PredictionResult
+
 # Ensure upload directory exists
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -127,5 +129,3 @@ async def predict(request: PredictionRequest, db: Session = Depends(get_db)):
     db.refresh(prediction_result)
 
     return {"predicted_digit": generated_text, "prediction_id": prediction_result.prediction_id}
-
-
