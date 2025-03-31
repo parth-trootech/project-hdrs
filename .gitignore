@@ -1,0 +1,10 @@
+.env
+.idea/
+.venv/
+__pycache__/
+uploads/
+migrations/
+alembic.ini
+app/__pycache__/
+app/backend/__pycache__/
+app/db/__pycache__/
