@@ -12,6 +12,7 @@ asttokens==3.0.0
 astunparse==1.6.3
 async-lru==2.0.5
 async-timeout==5.0.1
+asyncpg==0.30.0
 attrs==25.3.0
 babel==2.17.0
 bcrypt==3.2.0
@@ -21,7 +22,6 @@ bleach==6.2.0
 blinker==1.9.0
 Brlapi==0.8.3
 cachetools==5.5.2
-#catboost==1.2.7
 celery==5.4.0
 certifi==2025.1.31
 cffi==1.17.1
@@ -48,6 +48,7 @@ distro==1.7.0
 distro-info==1.1+ubuntu0.2
 dnspython==2.7.0
 duplicity==0.8.21
+easyocr==1.7.2
 email_validator==2.2.0
 etils==1.12.2
 exceptiongroup==1.2.2
@@ -66,10 +67,17 @@ future==0.18.3
 gast==0.6.0
 gitdb==4.0.12
 GitPython==3.1.44
+google-api-core==2.24.2
+google-auth==2.38.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.1
+google-cloud-vision==3.10.1
 google-pasta==0.2.0
+googleapis-common-protos==1.69.2
 graphviz==0.20.3
 greenlet==3.1.1
 grpcio==1.71.0
+grpcio-status==1.71.0
 h11==0.14.0
 h5py==3.13.0
 httpcore==1.0.7
@@ -92,6 +100,7 @@ jedi==0.19.2
 jeepney==0.7.1
 Jinja2==3.1.6
 joblib==1.4.2
+jovian==0.2.47
 json5==0.10.0
 jsonpointer==3.0.0
 jsonschema==4.23.0
@@ -141,6 +150,7 @@ nbformat==5.10.4
 nest-asyncio==1.6.0
 netifaces==0.11.0
 networkx==3.4.2
+ninja==1.11.1.4
 notebook==7.3.3
 notebook_shim==0.2.4
 numpy==2.1.3
@@ -160,6 +170,7 @@ nvidia-nvtx-cu12==12.4.127
 oauthlib==3.2.2
 olefile==0.46
 opencv-python==4.11.0.86
+opencv-python-headless==4.11.0.86
 opendatasets==0.1.22
 opt_einsum==3.4.0
 optax==0.2.4
@@ -180,13 +191,17 @@ platformdirs==4.3.7
 plotly==6.0.1
 prometheus_client==0.21.1
 prompt_toolkit==3.0.50
+proto-plus==1.26.1
 protobuf==5.29.4
 psutil==7.0.0
 psycopg2-binary==2.9.10
 ptyprocess==0.7.0
 pure_eval==0.2.3
 pyarrow==19.0.1
+pyasn1==0.6.1
+pyasn1_modules==0.4.2
 pycairo==1.20.1
+pyclipper==1.3.0.post6
 pycparser==2.22
 pycups==2.0.1
 pydantic==2.10.6
@@ -203,6 +218,7 @@ pyparsing==2.4.7
 pyRFC3339==1.1
 pytesseract==0.3.13
 python-apt==2.4.0+ubuntu4
+python-bidi==0.6.6
 python-dateutil==2.9.0.post0
 python-debian==0.1.43+ubuntu1.1
 python-dotenv==1.0.1
@@ -218,11 +234,13 @@ referencing==0.36.2
 regex==2024.11.6
 reportlab==3.6.13
 requests==2.32.3
+requests-oauthlib==2.0.0
 rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
 rich==13.9.4
 rich-toolkit==0.13.2
 rpds-py==0.23.1
+rsa==4.9
 safetensors==0.5.3
 scikit-image==0.25.2
 scikit-learn==1.6.1
@@ -231,6 +249,7 @@ seaborn==0.13.2
 SecretStorage==3.3.1
 Send2Trash==1.8.3
 sentencepiece==0.2.0
+shapely==2.0.7
 shellingham==1.5.4
 simplejson==3.20.1
 six==1.17.0
@@ -283,6 +302,7 @@ unattended-upgrades==0.1
 uri-template==1.3.0
 urllib3==2.3.0
 usb-creator==0.3.7
+uuid==1.30
 uvicorn==0.34.0
 uvloop==0.21.0
 vine==5.1.0

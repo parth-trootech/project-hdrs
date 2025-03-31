@@ -27,6 +27,7 @@ class ImageUpload(SQLModel, table=True):
     image_id: int = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.user_id")
     image_path: str = Field(nullable=False)
+    # noinspection PyDeprecation
     upload_time: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 
     # Relationship
@@ -34,6 +35,7 @@ class ImageUpload(SQLModel, table=True):
     predictions: List["PredictionResult"] = Relationship(back_populates="image_upload")
 
 
+# noinspection PyDeprecation
 class PredictionResult(SQLModel, table=True):
     __tablename__ = "prediction_results"
 
