@@ -1,0 +1,16 @@
+fastapi[all]
+sqlalchemy
+sqlmodel
+psycopg2-binary
+transformers
+Pillow
+passlib
+bcrypt
+pydantic
+pillow
+transformers
+torch
+python-dotenv
+numpy
+pandas
+alembic
