@@ -1,15 +1,13 @@
-import os
-import warnings
 import logging
-import re
 import os
+import re
+import warnings
+
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 import torch
-from transformers import TrOCRProcessor as model_processor, VisionEncoderDecoderModel as vedmodel
 from PIL import Image
-
+from transformers import TrOCRProcessor as model_processor, VisionEncoderDecoderModel as vedmodel
 
 # Suppress TensorFlow and CUDA logs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TF logs
@@ -22,9 +20,11 @@ warnings.filterwarnings("ignore")
 
 # Suppress logging from transformers and absl
 import transformers
+
 transformers.logging.set_verbosity_error()
 
 import absl.logging
+
 absl.logging.set_verbosity(absl.logging.ERROR)
 
 # Suppress logging globally
@@ -32,8 +32,6 @@ logging.getLogger("tensorflow").setLevel(logging.ERROR)
 logging.getLogger("transformers").setLevel(logging.ERROR)
 logging.getLogger("absl").setLevel(logging.ERROR)
 logging.getLogger("torch").setLevel(logging.ERROR)
-
-
 
 
 def segment_and_visualize(image_path, y_threshold=25, x_merge_threshold=15):
@@ -80,6 +78,7 @@ def segment_and_visualize(image_path, y_threshold=25, x_merge_threshold=15):
 
     return line_images
 
+
 def preprocess_image(image_path, processor):
     image = Image.open(image_path).convert("RGB")
     target_height = 384  # TrOCR default height
@@ -89,6 +88,7 @@ def preprocess_image(image_path, processor):
 
     pixel_values = processor(images=image, return_tensors="pt").pixel_values
     return pixel_values
+
 
 def recognize_text(image_paths):
     processor = model_processor.from_pretrained('ml_model')

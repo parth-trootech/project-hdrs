@@ -1,18 +1,15 @@
 import logging
 import os
-import re
 import uuid
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from PIL import Image
+
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
 from passlib.context import CryptContext
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from app.backend.service import segment_and_visualize,recognize_text
+
 from app.backend.schemas import PredictionRequest
 from app.backend.schemas import UserCreate, UserLogin
+from app.backend.service import segment_and_visualize, recognize_text
 from app.db.models import User, ImageUpload, PredictionResult
 
 # Ensure upload directory exists
@@ -101,8 +98,6 @@ async def upload_image(
         raise HTTPException(status_code=500, detail=f"Error uploading image: {str(e)}")
 
 
-
-
 # Predict
 @app.post("/predict")
 async def predict(request: PredictionRequest, db: Session = Depends(get_db)):
@@ -124,8 +119,6 @@ async def predict(request: PredictionRequest, db: Session = Depends(get_db)):
     db.refresh(prediction_result)
 
     return {"predicted_digit": extracted_text, "prediction_id": prediction_result.prediction_id}
-
-
 
 # # Predict
 # @app.post("/predict")
