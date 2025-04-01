@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:latest
-    container_name: postgres_db
-    restart: always
+    image: postgres:13
     environment:
       POSTGRES_USER: parth
       POSTGRES_PASSWORD: 1234
@@ -12,29 +10,22 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - backend
 
-  backend:
-    build:
-      context: .
-      dockerfile: backend.Dockerfile
-    container_name: fastapi_backend
-    depends_on:
-      - db
+  app:
+    build: .
     environment:
       DATABASE_URL: postgresql://parth:1234@localhost/users
     ports:
-      - "8000:8000"
-
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend.Dockerfile
-    container_name: streamlit_frontend
+      - "8000:8000"   # FastAPI port
+      - "8501:8501"   # Streamlit port
     depends_on:
+      - db
+    networks:
       - backend
-    ports:
-      - "8501:8501"
 
-volumes:
-  postgres_data:
+networks:
+  backend:
+    driver: bridge
