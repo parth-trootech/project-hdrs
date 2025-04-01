@@ -174,7 +174,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+from transformers import TrOCRProcessor as model_processor, VisionEncoderDecoderModel as vedmodel
 from PIL import Image
 
 def segment_and_visualize(image_path, y_threshold=25, x_merge_threshold=15):
@@ -206,7 +206,7 @@ def segment_and_visualize(image_path, y_threshold=25, x_merge_threshold=15):
         lines.append(current_line)
 
     line_images = []
-    os.makedirs("temp_images", exist_ok=True)
+    os.makedirs("../temp_images", exist_ok=True)
 
     for i, line in enumerate(lines):
         x_min = max(0, min([b[0] for b in line]) - x_merge_threshold)
@@ -231,10 +231,43 @@ def preprocess_image(image_path, processor):
     pixel_values = processor(images=image, return_tensors="pt").pixel_values
     return pixel_values
 
+# def recognize_text(image_paths):
+#     processor = TrOCRProcessor.from_pretrained('ml_model')
+#     model = VisionEncoderDecoderModel.from_pretrained('ml_model')
+#     model.eval()
+#
+#     extracted_text_lines = []
+#     os.makedirs("preprocessed_data", exist_ok=True)
+#
+#     for image_path in image_paths:
+#         pixel_values = preprocess_image(image_path, processor)
+#         torch.save(pixel_values, os.path.join("preprocessed_data", f"{os.path.basename(image_path)}.pt"))
+#
+#         with torch.no_grad():
+#             generated_ids = model.generate(pixel_values)
+#             generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+#
+#         cleaned_text = generated_text.replace(" ", "").replace(".", "")
+#         cleaned_text = re.sub(r'\D', '', generated_text)
+#         extracted_text_lines.append(cleaned_text)
+#         os.remove(image_path)
+#
+#     return "\n".join(extracted_text_lines)
+
 def recognize_text(image_paths):
-    processor = TrOCRProcessor.from_pretrained('ml_model')
-    model = VisionEncoderDecoderModel.from_pretrained('ml_model')
+    processor = model_processor.from_pretrained('../ml_model')
+    model = vedmodel.from_pretrained('../ml_model')
     model.eval()
+
+    # Mapping common OCR mistakes to digits
+    ocr_digit_map = {
+        'O': '0', 'o': '0',  # O (letter) -> 0 (zero)
+        'I': '1', 'l': '1',  # I, lowercase l -> 1
+        'Z': '2', 'z': '2',  # Z -> 2
+        'S': '5', 's': '5',  # S -> 5
+        'G': '6', 'g': '6',  # G -> 6
+        'B': '8', '&': '8',  # B, & -> 8
+    }
 
     extracted_text_lines = []
     os.makedirs("preprocessed_data", exist_ok=True)
@@ -247,8 +280,12 @@ def recognize_text(image_paths):
             generated_ids = model.generate(pixel_values)
             generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-        cleaned_text = generated_text.replace(" ", "").replace(".", "")
-        cleaned_text = re.sub(r'\D', '', generated_text)
+        # Convert misread characters to correct digits
+        corrected_text = ''.join(ocr_digit_map.get(char, char) for char in generated_text)
+
+        # Keep only digits (in case any unexpected non-digit remains)
+        cleaned_text = re.sub(r'\D', '', corrected_text)
+
         extracted_text_lines.append(cleaned_text)
         os.remove(image_path)
 
