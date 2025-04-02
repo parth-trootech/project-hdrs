@@ -1,20 +1,20 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10.12-slim
+# Use an official Python image
+FROM python:3.10.12
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the requirements file and install dependencies
-COPY requirements.txt .
+# Copy the entire project, including the ml_model submodule
+COPY . .
 
-# Install the dependencies
+# Ensure submodules are initialized (if using Git submodules)
+RUN git submodule update --init --recursive || true
+
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire app directory (backend and frontend)
-COPY app /app
-
-# Expose the ports for both FastAPI (8000) and Streamlit (8501)
+# Expose ports for FastAPI (8000) and Streamlit (8501)
 EXPOSE 8000 8501
 
-# Command to run both FastAPI and Streamlit concurrently
-CMD ["bash", "-c", "uvicorn app/backend/app.py --host 0.0.0.0 --port 8000 & streamlit run app/frontend/app.py"]
+# Start both FastAPI and Streamlit
+CMD ["sh", "-c", "uvicorn app.backend.app:app --host 0.0.0.0 --port 8000 & streamlit run app/frontend/app.py --server.port=8501 --server.address=0.0.0.0"]
