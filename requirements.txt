@@ -16,3 +16,6 @@ bcrypt
 pydantic
 python-dotenv
 asyncpg
+passlib
+opencv-python
+requests
