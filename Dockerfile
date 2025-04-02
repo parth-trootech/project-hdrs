@@ -12,13 +12,14 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the wheelhouse directory first to leverage Docker's caching
+# Copy the wheelhouse directory and requirements.txt first
 COPY wheelhouse /wheelhouse
+COPY requirements.txt .
 
-# Install Python dependencies from wheelhouse
+# Install Python dependencies from the wheelhouse
 RUN pip install --no-index --find-links=/wheelhouse -r requirements.txt
 
-# Copy the rest of the project, including the ml_model submodule
+# Copy the rest of the project
 COPY . .
 
 # Ensure Git submodules are initialized (if using Git submodules)
