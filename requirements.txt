@@ -19,3 +19,5 @@ asyncpg
 passlib
 opencv-python
 requests
+absl-py
+

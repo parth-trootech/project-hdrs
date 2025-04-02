@@ -4,14 +4,25 @@ FROM python:3.10.12
 # Set the working directory
 WORKDIR /app
 
-# Copy the entire project, including the ml_model submodule
+# Install system dependencies required by OpenCV and PostgreSQL
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    git \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the wheelhouse directory first to leverage Docker's caching
+COPY wheelhouse /wheelhouse
+
+# Install Python dependencies from wheelhouse
+RUN pip install --no-index --find-links=/wheelhouse -r requirements.txt
+
+# Copy the rest of the project, including the ml_model submodule
 COPY . .
 
-# Ensure submodules are initialized (if using Git submodules)
+# Ensure Git submodules are initialized (if using Git submodules)
 RUN git submodule update --init --recursive || true
-
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose ports for FastAPI (8000) and Streamlit (8501)
 EXPOSE 8000 8501

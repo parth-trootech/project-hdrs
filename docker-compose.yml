@@ -10,23 +10,26 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db:/docker-entrypoint-initdb.d  # Mount entire directory instead of a single file
     networks:
       - backend
+    restart: always  # Ensures DB restarts if it fails
 
   app:
     build: .
     environment:
-      DATABASE_URL: postgresql://parth:1234@db/users  # Use 'db' instead of 'localhost'
+      DATABASE_URL: postgresql://parth:1234@db/users  # Use 'db' as hostname
     ports:
-      - "8000:8000"   # FastAPI port
-      - "8501:8501"   # Streamlit port
+      - "8000:8000"  # FastAPI port
+      - "8501:8501"  # Streamlit port
     depends_on:
       - db
     networks:
       - backend
+    restart: always  # Ensures app restarts if it fails
+    volumes:
+      - ./wheelhouse:/app/wheelhouse  # Mount wheelhouse for faster dependency installation
 
 networks:
   backend:
     driver: bridge
-
